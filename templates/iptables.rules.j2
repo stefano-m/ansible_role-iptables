@@ -1,0 +1,25 @@
+*nat
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+COMMIT
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p icmp -m icmp --icmp-type echo-request -j ACCEPT
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+{% if iptables_lan_cidr is defined %}
+-A INPUT -s {{iptables_lan_cidr}} -m comment --comment "LAN" -j ACCEPT
+{% endif %}
+{% for item in iptables_accept_rules %}
+-A INPUT -p {{item.protocol}} -m {{item.module}} --dport {{item.dport}} -j ACCEPT
+{% endfor %}
+{% for item in iptables_free_form %}
+{{item}}
+{% endfor %}
+-A INPUT -p tcp -j REJECT --reject-with tcp-reset
+-A INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
+-A INPUT -j REJECT --reject-with icmp-proto-unreachable
+COMMIT

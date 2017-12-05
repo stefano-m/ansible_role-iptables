@@ -1,0 +1,14 @@
+[Unit]
+Description=Packet Filtering Framework
+Before=network-pre.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '/sbin/iptables-restore < {{iptables_dir}}/iptables.rules'
+ExecReload=/bin/bash -c '/sbin/iptables-restore < {{iptables_dir}}/iptables.rules'
+ExecStop={{iptables_dir}}/iptables-flush
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

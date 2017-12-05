@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# Usage: iptables-flush
+#
+
+iptables=ip$1tables
+if ! type -p "$iptables"; then
+  echo "error: invalid argument"
+  exit 1
+fi
+
+while read -r table; do
+  tables+=("{{iptables_dir}}/empty-$table.rules")
+done <"/proc/net/ip$1_tables_names"
+
+{# Must put the variables below as strings in a template or Ansible will barf #}
+if (( {{'${#tables[*]}'}} )); then
+  cat "{{'${tables[@]}'}}" | "$iptables-restore"
+fi
